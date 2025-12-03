@@ -1,64 +1,60 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useMemo } from "react";
 
-// Product Management (HTML React / JavaScript) — ครบทุกฟีเจอร์ตามที่ร้องขอ
+/**
+ * @typedef {Object} Product
+ * @property {string} id
+ * @property {string} name
+ * @property {string} sku
+ * @property {number} price
+ * @property {number} stock
+ * @property {string} category
+ * @property {string} createdAt
+ */
 
 export default function ProductList() {
-  // ---- types (JS version) ----
-  const categories = ['ทั้งหมด', 'อาหาร', 'เครื่องดื่ม', 'ของใช้', 'เสื้อผ้า'];
+  const categories = ["ทั้งหมด", "อาหาร", "เครื่องดื่ม", "ของใช้", "เสื้อผ้า"]; 
 
-  // ---- mock data ----
   const initialProducts = [
-    { id: 'p1', name: 'ข้าวผัด', sku: 'FD-001', price: 45, stock: 20, category: 'อาหาร', createdAt: new Date().toISOString() },
-    { id: 'p2', name: 'น้ำส้ม', sku: 'DR-001', price: 25, stock: 50, category: 'เครื่องดื่ม', createdAt: new Date().toISOString() },
-    { id: 'p3', name: 'สบู่', sku: 'UT-001', price: 35, stock: 0, category: 'ของใช้', createdAt: new Date().toISOString() },
-    { id: 'p4', name: 'เสื้อยืด', sku: 'CL-001', price: 299, stock: 5, category: 'เสื้อผ้า', createdAt: new Date().toISOString() },
-    { id: 'p5', name: 'ขนมหวาน', sku: 'FD-002', price: 30.5, stock: 8, category: 'อาหาร', createdAt: new Date().toISOString() },
+    { id: "1", name: "ข้าวผัด", sku: "FO-001", price: 45, stock: 20, category: "อาหาร", createdAt: "2025-01-01" },
+    { id: "2", name: "น้ำส้ม", sku: "DR-001", price: 25, stock: 50, category: "เครื่องดื่ม", createdAt: "2025-01-02" },
+    { id: "3", name: "สบู่", sku: "UT-001", price: 35, stock: 0, category: "ของใช้", createdAt: "2025-01-03" },
+    { id: "4", name: "เสื้อยืด", sku: "CL-001", price: 299, stock: 5, category: "เสื้อผ้า", createdAt: "2025-01-04" }
   ];
 
   const [products, setProducts] = useState(initialProducts);
-  const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด');
+  const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
 
-  // ---- currency ----
-  const currency = (v) => {
-    try {
-      return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 2 }).format(v);
-    } catch (e) {
-      return `฿${v.toFixed(2)}`;
-    }
-  };
-
-  // ---- filter ----
+  // Filtering
   function getFilteredProducts() {
-    if (selectedCategory === 'ทั้งหมด') return products;
+    if (selectedCategory === "ทั้งหมด") return products;
     return products.filter((p) => p.category === selectedCategory);
   }
 
-  const filtered = useMemo(() => getFilteredProducts(), [products, selectedCategory]);
+  const filtered = getFilteredProducts();
 
-  const totalCount = filtered.length;
-  const totalValue = filtered.reduce((s, p) => s + p.price * p.stock, 0);
+  // Summary
+  const totalValue = filtered.reduce((sum, p) => sum + p.price * p.stock, 0);
 
-  // ---- Sell ----
-  const handleSell = (sku) => {
-    setProducts((prev) => {
-      const idx = prev.findIndex((p) => p.sku === sku);
-      if (idx === -1) {
-        window.alert('ไม่พบสินค้า');
-        return prev;
-      }
-      const prod = prev[idx];
-      if (prod.stock <= 0) {
-        window.alert('สินค้าหมด ไม่สามารถขายได้');
-        return prev;
-      }
-      const next = [...prev];
-      next[idx] = { ...prod, stock: prod.stock - 1 };
-      window.alert(`ขายสินค้า ${prod.name} สำเร็จ (คงเหลือ ${prod.stock - 1})`);
-      return next;
-    });
+  // Sell Product
+  const handleSell = (id) => {
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          if (p.stock <= 0) {
+            alert("ขายไม่ได้: สินค้าหมด");
+            return p;
+          }
+          alert(`ขาย 1 ชิ้นของ ${p.name} สำเร็จ`);
+          return { ...p, stock: p.stock - 1 };
+        }
+        return p;
+      })
+    );
   };
 
-  // ---- add product form ----
+  // ------------------------------------
+  // Add Product Form
+  // ------------------------------------
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [price, setPrice] = useState('');
@@ -77,146 +73,126 @@ export default function ProductList() {
     return e;
   }, [name, sku, price, stock, products]);
 
-  const isFormValid =
-    Object.keys(errors).length === 0 &&
-    name.trim() !== '' &&
-    sku.trim() !== '' &&
-    price !== '' &&
-    stock !== '';
+  const isFormValid = Object.keys(errors).length === 0 && name && sku && price && stock;
 
-  const handleAddProduct = (e) => {
+  const handleAdd = (e) => {
     e.preventDefault();
     if (!isFormValid) return;
 
     const newProduct = {
-      id: `p_${Date.now()}`,
+      id: String(Date.now()),
       name: name.trim(),
       sku: sku.trim(),
       price: Number(price),
       stock: Number(stock),
       category,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     };
 
     setProducts((prev) => [newProduct, ...prev]);
 
-    // clear form
     setName('');
     setSku('');
     setPrice('');
     setStock('');
     setCategory('อาหาร');
-    window.alert('เพิ่มสินค้าเรียบร้อย');
+
+    alert('เพิ่มสินค้าเรียบร้อย');
   };
 
   return (
-    <div style={{ padding: 16, fontFamily: 'sans-serif', maxWidth: 1000, margin: '0 auto' }}>
-      <h2>ระบบจัดการสินค้า (Product Management)</h2>
+    <div style={{ padding: 20, fontFamily: "sans-serif", maxWidth: 1000, margin: "0 auto" }}>
+      <h1>ระบบจัดการสินค้า (Product Management)</h1>
 
-      {/* Filter */}
-      <div style={{ margin: '12px 0', display: 'flex', gap: 12, alignItems: 'center' }}>
-        <label>
-          หมวดหมู่:{' '}
-          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
+      {/* Category Filter */}
+      <div style={{ marginBottom: 15 }}>
+        <label>เลือกหมวดหมู่: </label>
+        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+          {categories.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Table */}
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ccc' }}>
-          <thead>
-            <tr style={{ background: '#2f9e44', color: 'white' }}>
-              <th style={thStyle}>SKU</th>
-              <th style={thStyle}>ชื่อสินค้า</th>
-              <th style={thStyle}>หมวดหมู่</th>
-              <th style={thStyle}>ราคา</th>
-              <th style={thStyle}>สต็อก</th>
-              <th style={thStyle}>การจัดการ</th>
+      {/* Product Table */}
+      <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #333" }}>
+        <thead>
+          <tr style={{ background: "#4caf50", color: "white" }}>
+            <th style={th}>SKU</th>
+            <th style={th}>ชื่อสินค้า</th>
+            <th style={th}>หมวดหมู่</th>
+            <th style={th}>ราคา</th>
+            <th style={th}>สต็อก</th>
+            <th style={th}>การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((p) => (
+            <tr key={p.id} style={{ background: p.stock === 0 ? "#ffebee" : "white" }}>
+              <td style={td}>{p.sku}</td>
+              <td style={td}>{p.name}</td>
+              <td style={td}>{p.category}</td>
+              <td style={td}>{p.price.toFixed(2)}</td>
+              <td style={{ ...td, color: p.stock < 10 ? "red" : "black", fontWeight: p.stock < 10 ? "bold" : "normal" }}>
+                {p.stock}
+              </td>
+              <td style={td}>
+                <button onClick={() => handleSell(p.id)} disabled={p.stock === 0}>ขาย</button>
+                <button style={{ marginLeft: 6 }} onClick={() => setProducts(prev => prev.filter(pp => pp.id !== p.id))}>ลบ</button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {filtered.map((p) => {
-              const isOut = p.stock === 0;
-              const lowStock = p.stock > 0 && p.stock < 10;
-              return (
-                <tr key={p.id} style={{ background: isOut ? '#ffdede' : undefined }}>
-                  <td style={tdStyle}>{p.sku}</td>
-                  <td style={tdStyle}>{p.name}</td>
-                  <td style={tdStyle}>{p.category}</td>
-                  <td style={tdStyle}>{currency(p.price)}</td>
-                  <td style={tdStyle}>
-                    <span style={lowStock ? { color: 'red', fontWeight: 700 } : undefined}>{p.stock}</span>
-                  </td>
-                  <td style={tdStyle}>
-                    <button onClick={() => handleSell(p.sku)} disabled={p.stock === 0} style={{ marginRight: 8 }}>
-                      ขาย
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`ต้องการลบ ${p.name} หรือไม่?`)) {
-                          setProducts((prev) => prev.filter((x) => x.sku !== p.sku));
-                        }
-                      }}
-                    >
-                      ลบ
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
 
       {/* Summary */}
-      <div style={{ marginTop: 12, padding: 12, border: '1px solid #ddd', borderRadius: 6 }}>
-        <div>
-          สินค้าที่แสดง: <strong>{totalCount}</strong>
-        </div>
-        <div>
-          มูลค่ารวม (รวมรายการที่แสดง): <strong>{currency(totalValue)}</strong>
-        </div>
+      <div style={{ marginTop: 20 }}>
+        <p>จำนวนสินค้าที่แสดง: {filtered.length} รายการ</p>
+        <p>มูลค่ารวมสินค้า: {totalValue.toLocaleString()} บาท</p>
       </div>
 
       {/* Add Product Form */}
-      <form onSubmit={handleAddProduct} style={{ marginTop: 16, padding: 12, border: '1px solid #eee', borderRadius: 6 }}>
+      <form onSubmit={handleAdd} style={{ marginTop: 20, border: "1px solid #ccc", padding: 15, borderRadius: 8 }}>
         <h3>เพิ่มสินค้าใหม่</h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={formGrid}>
           <div>
-            <label>ชื่อสินค้า</label>
+            <label>ชื่อสินค้า</label><br />
             <input value={name} onChange={(e) => setName(e.target.value)} />
-            {errors.name && <div style={{ color: 'red', fontSize: 12 }}>{errors.name}</div>}
+            {errors.name && <div style={err}>{errors.name}</div>}
           </div>
 
           <div>
-            <label>SKU</label>
+            <label>SKU</label><br />
             <input value={sku} onChange={(e) => setSku(e.target.value)} />
-            {errors.sku && <div style={{ color: 'red', fontSize: 12 }}>{errors.sku}</div>}
+            {errors.sku && <div style={err}>{errors.sku}</div>}
           </div>
 
           <div>
-            <label>ราคา (บาท)</label>
+            <label>ราคา</label><br />
             <input value={price} onChange={(e) => setPrice(e.target.value)} />
-            {errors.price && <div style={{ color: 'red', fontSize: 12 }}>{errors.price}</div>}
+            {errors.price && <div style={err}>{errors.price}</div>}
           </div>
 
           <div>
-            <label>สต็อก</label>
+            <label>สต็อก</label><br />
             <input value={stock} onChange={(e) => setStock(e.target.value)} />
-            {errors.stock && <div style={{ color: 'red', fontSize: 12 }}>{errors.stock}</div>}
+            {errors.stock && <div style={err}>{errors.stock}</div>}
           </div>
 
-          <div style={{ gridColumn: '1 / -1' }}>
-            <label>หมวดหมู่</label>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label>หมวดหมู่</label><br />
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="อาหาร">อาหาร</option>
               <option value="เครื่องดื่ม">เครื่องดื่ม</option>
-              <option value="ของใช้">ของใช้</option>
-              <option value="เสื้อผ้า">เสื้อผ้า
+              <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+            {errors.category && <div style={err}>{errors.category}</div>}
+          </div>
+        </div>
+
+        <button type="submit">เพิ่มสินค้า</button>
+      </form>
+    </div>
+  );
+}
