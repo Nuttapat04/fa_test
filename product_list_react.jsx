@@ -12,13 +12,13 @@ import React, { useState, useMemo } from "react";
  */
 
 export default function ProductList() {
-  const categories = ["ทั้งหมด", "อาหาร", "เครื่องดื่ม", "ของใช้", "เสื้อผ้า"]; 
+  const categories = ["ทั้งหมด", "อาหาร", "เครื่องดื่ม", "ของใช้", "เสื้อผ้า"];
 
   const initialProducts = [
     { id: "1", name: "ข้าวผัด", sku: "FO-001", price: 45, stock: 20, category: "อาหาร", createdAt: "2025-01-01" },
     { id: "2", name: "น้ำส้ม", sku: "DR-001", price: 25, stock: 50, category: "เครื่องดื่ม", createdAt: "2025-01-02" },
     { id: "3", name: "สบู่", sku: "UT-001", price: 35, stock: 0, category: "ของใช้", createdAt: "2025-01-03" },
-    { id: "4", name: "เสื้อยืด", sku: "CL-001", price: 299, stock: 5, category: "เสื้อผ้า", createdAt: "2025-01-04" }
+    { id: "4", name: "เสื้อยืด", sku: "CL-001", price: 299, stock: 5, category: "เสื้อผ้า", createdAt: "2025-01-04" },
   ];
 
   const [products, setProducts] = useState(initialProducts);
@@ -29,7 +29,6 @@ export default function ProductList() {
     if (selectedCategory === "ทั้งหมด") return products;
     return products.filter((p) => p.category === selectedCategory);
   }
-
   const filtered = getFilteredProducts();
 
   // Summary
@@ -55,21 +54,22 @@ export default function ProductList() {
   // ------------------------------------
   // Add Product Form
   // ------------------------------------
-  const [name, setName] = useState('');
-  const [sku, setSku] = useState('');
-  const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
-  const [category, setCategory] = useState('อาหาร');
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [category, setCategory] = useState("อาหาร");
 
   const errors = useMemo(() => {
     const e = {};
-    if (name.trim().length < 3) e.name = 'ชื่อสินค้าต้องมีอย่างน้อย 3 ตัวอักษร';
-    if (!sku.trim()) e.sku = 'SKU ห้ามว่าง';
-    else if (products.some((p) => p.sku.toLowerCase() === sku.trim().toLowerCase())) e.sku = 'SKU ซ้ำกับสินค้าอื่น';
+    if (name.trim().length < 3) e.name = "ชื่อสินค้าต้องมีอย่างน้อย 3 ตัวอักษร";
+    if (!sku.trim()) e.sku = "SKU ห้ามว่าง";
+    else if (products.some((p) => p.sku.toLowerCase() === sku.trim().toLowerCase()))
+      e.sku = "SKU ซ้ำกับสินค้าอื่น";
     const pr = Number(price);
-    if (Number.isNaN(pr) || pr <= 0) e.price = 'ราคาต้องเป็นตัวเลขและมากกว่า 0';
+    if (Number.isNaN(pr) || pr <= 0) e.price = "ราคาต้องเป็นตัวเลขและมากกว่า 0";
     const st = Number(stock);
-    if (!Number.isInteger(st) || st < 0) e.stock = 'สต็อกต้องเป็นจำนวนเต็ม >= 0';
+    if (!Number.isInteger(st) || st < 0) e.stock = "สต็อกต้องเป็นจำนวนเต็ม >= 0";
     return e;
   }, [name, sku, price, stock, products]);
 
@@ -86,19 +86,25 @@ export default function ProductList() {
       price: Number(price),
       stock: Number(stock),
       category,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     setProducts((prev) => [newProduct, ...prev]);
 
-    setName('');
-    setSku('');
-    setPrice('');
-    setStock('');
-    setCategory('อาหาร');
+    setName("");
+    setSku("");
+    setPrice("");
+    setStock("");
+    setCategory("อาหาร");
 
-    alert('เพิ่มสินค้าเรียบร้อย');
+    alert("เพิ่มสินค้าเรียบร้อย");
   };
+
+  // ---------------- Styles ----------------
+  const th = { border: "1px solid #333", padding: "8px", textAlign: "left" };
+  const td = { border: "1px solid #333", padding: "8px" };
+  const formGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 };
+  const err = { color: "red", fontSize: 12 };
 
   return (
     <div style={{ padding: 20, fontFamily: "sans-serif", maxWidth: 1000, margin: "0 auto" }}>
@@ -138,7 +144,7 @@ export default function ProductList() {
               </td>
               <td style={td}>
                 <button onClick={() => handleSell(p.id)} disabled={p.stock === 0}>ขาย</button>
-                <button style={{ marginLeft: 6 }} onClick={() => setProducts(prev => prev.filter(pp => pp.id !== p.id))}>ลบ</button>
+                <button style={{ marginLeft: 6 }} onClick={() => setProducts((prev) => prev.filter((pp) => pp.id !== p.id))}>ลบ</button>
               </td>
             </tr>
           ))}
@@ -154,44 +160,38 @@ export default function ProductList() {
       {/* Add Product Form */}
       <form onSubmit={handleAdd} style={{ marginTop: 20, border: "1px solid #ccc", padding: 15, borderRadius: 8 }}>
         <h3>เพิ่มสินค้าใหม่</h3>
-
         <div style={formGrid}>
           <div>
             <label>ชื่อสินค้า</label><br />
             <input value={name} onChange={(e) => setName(e.target.value)} />
             {errors.name && <div style={err}>{errors.name}</div>}
           </div>
-
           <div>
             <label>SKU</label><br />
             <input value={sku} onChange={(e) => setSku(e.target.value)} />
             {errors.sku && <div style={err}>{errors.sku}</div>}
           </div>
-
           <div>
             <label>ราคา</label><br />
             <input value={price} onChange={(e) => setPrice(e.target.value)} />
             {errors.price && <div style={err}>{errors.price}</div>}
           </div>
-
           <div>
             <label>สต็อก</label><br />
             <input value={stock} onChange={(e) => setStock(e.target.value)} />
             {errors.stock && <div style={err}>{errors.stock}</div>}
           </div>
-
           <div style={{ gridColumn: "1 / -1" }}>
             <label>หมวดหมู่</label><br />
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="อาหาร">อาหาร</option>
               <option value="เครื่องดื่ม">เครื่องดื่ม</option>
-              <option value="อื่นๆ">อื่นๆ</option>
+              <option value="ของใช้">ของใช้</option>
+              <option value="เสื้อผ้า">เสื้อผ้า</option>
             </select>
-            {errors.category && <div style={err}>{errors.category}</div>}
           </div>
         </div>
-
-        <button type="submit">เพิ่มสินค้า</button>
+        <button type="submit" style={{ marginTop: 10 }}>เพิ่มสินค้า</button>
       </form>
     </div>
   );
